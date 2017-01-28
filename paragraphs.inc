@@ -70,12 +70,19 @@ class ParagraphItem extends DrupalMigration {
       $this->paragraph_options
     );
 
+    $this->sourceFields['bundle'] = 'bundle';
+
     // The field mappings
     $this->addFieldMapping('field_name', 'field_name');
-    $this->addFieldMapping('bundle', 'bundle');
+    //$this->addFieldMapping('bundle', 'bundle');
 
     foreach ($this->sourceFields as $machine_name => $label){
-      $this->addFieldMapping($machine_name, $machine_name);
+      if($machine_name !== 'field_image' &&
+         $machine_name !== 'bundle' &&
+         strpos($machine_name, 'language') == false ){
+
+        $this->addFieldMapping($machine_name, $machine_name);
+      }
     }
   }
 
@@ -124,7 +131,7 @@ class FullWidthImage extends ParagraphItem {
     // source : https://www.drupal.org/node/1540106#comment-8589917
     $this->addFieldMapping('field_image', 'field_image')->sourceMigration('Files');
     $this->addFieldMapping('field_image:file_class')->defaultValue('migrateFileFid');
-    $this->addFieldMapping('field_image:preserve_files')->defaultValue(TRUE);
+    $this->addFieldMapping('field_image:preserve_files')->defaultValue(FALSE);
   }
 }
 
