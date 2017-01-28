@@ -75,6 +75,13 @@ class ParagraphItemAbstractClass extends DrupalMigration {
       $bundle,
       $this->paragraph_options
     );
+
+    $this->addFieldMapping('field_name', 'field_name');
+    $this->addFieldMapping('bundle', 'bundle');
+
+    foreach ($this->sourceFields as $machine_name => $label){
+      $this->addFieldMapping($machine_name, $machine_name);
+    }
   }
 
   /**
@@ -107,23 +114,11 @@ class FullWidthImage extends ParagraphItemAbstractClass {
     parent::__construct($arguments);
 
     $this->description = t('Full Width Image Paragraph Item.');
-    //$this->config($arguments['destination_type']);
-    $this->sourceFields += $this->version->getSourceFields('paragraphs_item', $arguments['destination_type']);
-    $this->source = new MigrateSourceSQL($this->query($arguments['destination_type']), $this->sourceFields, NULL,
-      $this->sourceOptions);
+    $this->config($arguments['destination_type']);
 
-    $paragraph_options['field_name'] = 'field_slice';
-
-    // Set a destination.
-    $this->destination = new MigrateDestinationParagraphsItem(
-      'full_width_image',
-      $this->paragraph_options
-    );
-
-    $this->addFieldMapping('field_name', 'field_name');
-    $this->addFieldMapping('field_image', 'field_image');
-    $this->addFieldMapping('field_caption', 'field_caption');
-    $this->addFieldMapping('bundle', 'bundle');
+    $this->addFieldMapping('field_image:source_dir')->defaultValue('/sites/default/files/');
+    $this->addFieldMapping('field_main_image:source_path')
+      ->defaultValue('/mnt/source_images');
   }
 }
 
@@ -141,23 +136,7 @@ class FullWidthText extends ParagraphItemAbstractClass {
     parent::__construct($arguments);
 
     $this->description = t('Full Width Text Paragraph Item.');
-    //$this->config($arguments['destination_type']);
-    $this->sourceFields += $this->version->getSourceFields('paragraphs_item', $arguments['destination_type']);
-    $this->source = new MigrateSourceSQL($this->query($arguments['destination_type']), $this->sourceFields, NULL,
-      $this->sourceOptions);
-
-    $paragraph_options['field_name'] = 'field_slice';
-
-    // Set a destination.
-    $this->destination = new MigrateDestinationParagraphsItem(
-      'full_width_text',
-      $this->paragraph_options
-    );
-
-    $this->addFieldMapping('field_name', 'field_name');
-    $this->addFieldMapping('field_text', 'field_text');
-    $this->addFieldMapping('field_text:value', 'field_text:value');
-    $this->addFieldMapping('bundle', 'bundle');
+    $this->config($arguments['destination_type']);
   }
 }
 
@@ -175,24 +154,6 @@ class PullQuote extends ParagraphItemAbstractClass {
     parent::__construct($arguments);
 
     $this->description = t('Pull Quote Paragraph Item.');
-    //$this->config($arguments['destination_type']);
-    $this->sourceFields += $this->version->getSourceFields('paragraphs_item', $arguments['destination_type']);
-    $this->source = new MigrateSourceSQL($this->query($arguments['destination_type']), $this->sourceFields, NULL,
-      $this->sourceOptions);
-
-    $paragraph_options['field_name'] = 'field_slice';
-
-    // Set a destination.
-    $this->destination = new MigrateDestinationParagraphsItem(
-      'pull_quote',
-      $this->paragraph_options
-    );
-
-    $this->addFieldMapping('field_name', 'field_name');
-    $this->addFieldMapping('field_quote', 'field_quote');
-    $this->addFieldMapping('field_quote:value', 'field_quote:value');
-    $this->addFieldMapping('field_credit', 'field_credit');
-    $this->addFieldMapping('field_title_organization', 'field_title_organization');
-    $this->addFieldMapping('bundle', 'bundle');
+    $this->config($arguments['destination_type']);
   }
 }
