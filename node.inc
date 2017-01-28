@@ -7,7 +7,6 @@ class BasicPageNodeMigration extends DrupalNode7Migration {
     $this->sourceFields['field_slice'] = 'Slice';
     $this->sourceFields['field_slice:revision_id'] = 'Slice';
 
-    $this->addFieldMapping('pathauto', 'pathauto');
     $this->addFieldMapping('field_slice', 'field_slice')
          ->sourceMigration(array('Full_Width_Image', 'Full_Width_Text', 'Pull_Quote'));
     $this->addFieldMapping('field_slice:revision_id', 'field_slice:revision_id')

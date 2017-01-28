@@ -1,9 +1,12 @@
+name = "migrate_landing_page"
+description = "Import landing page content."
 core = "7.x"
 dependencies[] = "migrate"
-description = "Import landing page content."
+
 files[] = "migrate_landing_page.migrate.inc"
 files[] = "node.inc"
 files[] = "paragraphs.inc"
-name = "migrate_landing_page"
+files[] = "file.inc"
+
 package = "Migration"
 php = "5.2.4"

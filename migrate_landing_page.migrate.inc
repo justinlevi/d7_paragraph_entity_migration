@@ -15,7 +15,6 @@ function migrate_landing_page_migrate_api() {
     'migrations' => array(),
   );
 
-
   $common_arguments = array(
     'source_connection' => 'migrate',
     'source_version' => 7,
@@ -23,20 +22,27 @@ function migrate_landing_page_migrate_api() {
   );
 
   $node_arguments = array(
+    'Files' => array(
+      'class_name' => 'FileMigration',
+      'description' => t('Migration of Files Paragraph Entities'),
+      'source_type' => 'file',
+      'destination_type' => 'file',
+    ),
     'Full_Width_Image' => array(
       'class_name' => 'FullWidthImage',
       'description' => t('Migration of Full Width Image Paragraph Entities'),
       'source_type' => 'full_width_image',
       'destination_type' => 'full_width_image',
+      'dependencies' => array('Files'),
     ),
     'Full_Width_Text' => array(
-      'class_name' => 'FullWidthText',
+      'class_name' => 'ParagraphItem',
       'description' => t('Migration of Full Width Text Paragraph Entities'),
       'source_type' => 'full_width_text',
       'destination_type' => 'full_width_text',
     ),
     'Pull_Quote' => array(
-      'class_name' => 'PullQuote',
+      'class_name' => 'ParagraphItem',
       'description' => t('Migration of Full Width Image Paragraph Entities'),
       'source_type' => 'pull_quote',
       'destination_type' => 'pull_quote',
@@ -46,7 +52,7 @@ function migrate_landing_page_migrate_api() {
       'description' => t('Migration of Basic Page with Paragraph Bundles'),
       'source_type' => 'page',
       'destination_type' => 'page',
-      'dependencies' => array('Full_Width_Image', 'Full_Width_Text', 'Pull_Quote'),
+      'dependencies' => array('Files', 'Full_Width_Image', 'Full_Width_Text', 'Pull_Quote'),
     ),
   );
 

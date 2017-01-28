@@ -3,7 +3,7 @@
 /**
  * Base functionality for all paragraph bundle types.
  */
-class ParagraphItemAbstractClass extends DrupalMigration {
+class ParagraphItem extends DrupalMigration {
 
   /**
    * Options for constructing the destination.
@@ -36,7 +36,18 @@ class ParagraphItemAbstractClass extends DrupalMigration {
    * {@inheritdoc}
    */
   public function __construct(array $arguments) {
+
+    // Need to set these prior to initializing the parent class
+    $this->entityType = 'paragraphs_item';
+    $this->bundle = $arguments['destination_type'];
+
     parent::__construct($arguments);
+
+    // Source Fields
+    $this->sourceFields += $this->version->getSourceFields('paragraphs_item', $this->bundle);
+
+    $this->source = new MigrateSourceSQL($this->query($this->bundle), $this->sourceFields, NULL,
+      $this->sourceOptions);
 
     // Create a migration map.
     $this->map = new MigrateSQLMap($this->machineName,
@@ -49,6 +60,23 @@ class ParagraphItemAbstractClass extends DrupalMigration {
       ),
       MigrateDestinationParagraphsItem::getKeySchema()
     );
+
+    // The field we're working with
+    $paragraph_options['field_name'] = 'field_slice';
+
+    // Set a destination.
+    $this->destination = new MigrateDestinationParagraphsItem(
+      $this->bundle,
+      $this->paragraph_options
+    );
+
+    // The field mappings
+    $this->addFieldMapping('field_name', 'field_name');
+    $this->addFieldMapping('bundle', 'bundle');
+
+    foreach ($this->sourceFields as $machine_name => $label){
+      $this->addFieldMapping($machine_name, $machine_name);
+    }
   }
 
   /**
@@ -63,26 +91,6 @@ class ParagraphItemAbstractClass extends DrupalMigration {
     $this->version->getSourceValues($row, $row->revision_id);
   }
 
-  protected function config($bundle) {
-    $this->sourceFields += $this->version->getSourceFields('paragraphs_item', $bundle);
-    $this->source = new MigrateSourceSQL($this->query($bundle), $this->sourceFields, NULL,
-      $this->sourceOptions);
-
-    $paragraph_options['field_name'] = 'field_slice';
-
-    // Set a destination.
-    $this->destination = new MigrateDestinationParagraphsItem(
-      $bundle,
-      $this->paragraph_options
-    );
-
-    $this->addFieldMapping('field_name', 'field_name');
-    $this->addFieldMapping('bundle', 'bundle');
-
-    foreach ($this->sourceFields as $machine_name => $label){
-      $this->addFieldMapping($machine_name, $machine_name);
-    }
-  }
 
   /**
    * Query for paragraph bundles from Drupal 7.
@@ -103,57 +111,49 @@ class ParagraphItemAbstractClass extends DrupalMigration {
 /**
  * ParagraphsBundle - full_width_image.
  */
-class FullWidthImage extends ParagraphItemAbstractClass {
+class FullWidthImage extends ParagraphItem {
 
   /**
    * {@inheritdoc}
    */
   public function __construct($arguments) {
-    $this->entityType = 'paragraphs_item';
-    $this->bundle = $arguments['destination_type'];
     parent::__construct($arguments);
 
     $this->description = t('Full Width Image Paragraph Item.');
-    $this->config($arguments['destination_type']);
 
-    $this->addFieldMapping('field_image:source_dir')->defaultValue('/sites/default/files/');
-    $this->addFieldMapping('field_main_image:source_path')
-      ->defaultValue('/mnt/source_images');
+    // source : https://www.drupal.org/node/1540106#comment-8589917
+    $this->addFieldMapping('field_image', 'field_image')->sourceMigration('Files');
+    $this->addFieldMapping('field_image:file_class')->defaultValue('migrateFileFid');
+    $this->addFieldMapping('field_image:preserve_files')->defaultValue(TRUE);
   }
 }
 
 /**
  * ParagraphsBundle - full_width_image.
  */
-class FullWidthText extends ParagraphItemAbstractClass {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function __construct($arguments) {
-    $this->entityType = 'paragraphs_item';
-    $this->bundle = $arguments['destination_type'];
-    parent::__construct($arguments);
-
-    $this->description = t('Full Width Text Paragraph Item.');
-    $this->config($arguments['destination_type']);
-  }
-}
+//class FullWidthText extends ParagraphItem {
+//
+//  /**
+//   * {@inheritdoc}
+//   */
+//  public function __construct($arguments) {
+//    parent::__construct($arguments);
+//
+//    $this->description = t('Full Width Text Paragraph Item.');
+//  }
+//}
 
 /**
  * ParagraphsBundle - pull_quote.
  */
-class PullQuote extends ParagraphItemAbstractClass {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function __construct($arguments) {
-    $this->entityType = 'paragraphs_item';
-    $this->bundle = $arguments['destination_type'];
-    parent::__construct($arguments);
-
-    $this->description = t('Pull Quote Paragraph Item.');
-    $this->config($arguments['destination_type']);
-  }
-}
+//class PullQuote extends ParagraphItem {
+//
+//  /**
+//   * {@inheritdoc}
+//   */
+//  public function __construct($arguments) {
+//    parent::__construct($arguments);
+//
+//    $this->description = t('Pull Quote Paragraph Item.');
+//  }
+//}
