@@ -1,6 +1,5 @@
 <?php
 
-
 /**
  * Saves a file object to the database.
  *
@@ -17,7 +16,9 @@
  */
 function custom_file_save(stdClass $file) {
   $file->timestamp = REQUEST_TIME;
-  //$file->filesize = filesize($file->uri);
+
+  $uri = FileMigration::SOURCE_DIR . str_replace('public://', '', $file->uri);
+  $file->filesize = file_exists($uri) ? filesize($uri) : 1;
 
   // Load the stored entity, if any.
   if (!empty($file->fid) && !isset($file->original)) {
@@ -61,107 +62,44 @@ class CustomMigrateFileUriAsIs extends MigrateFileBase {
   }
 }
 
-class FileMigration extends DrupalMigration {
+
+class FileMigration extends DrupalFile7Migration {
+
+  const SOURCE_DIR = '/Users/justinwinter/Sites/d7a/docroot/sites/default/files/';
 
   /**
    * FileMigration constructor.
    * @param array $arguments
    */
   public function __construct(array $arguments) {
-    parent::__construct($arguments);
 
-    $arguments['source_dir'] = '/Users/justinwinter/Sites/d7a/docroot/sites/default/files/';
+    $arguments['source_dir'] = self::SOURCE_DIR;
     $arguments['file_class'] = 'CustomMigrateFileUriAsIs';
 
-    $this->addFieldMapping('value', 'uri');
-    $this->addFieldMapping('destination_file', 'uri');
-    $this->addFieldMapping('timestamp', 'timestamp');
+    parent::__construct($arguments);
 
-    $this->addUnmigratedSources(array('status'));
-
-
-    $arguments['bundle'] = 'file';
-    $arguments['destination_dir'] = '/Users/justinwinter/Sites/d7a/docroot/sites/default/files/';
-
-    $this->sourceFields += $this->version->getSourceFields('file',
-      $arguments['bundle']);
-    // Allow derived classes to override this definition by setting it before
-    // calling their parent constructor
-    if (!isset($this->map)) {
-      $this->map = new MigrateSQLMap($this->machineName,
-        array(
-          'fid' => array(
-            'type' => 'int',
-            'unsigned' => TRUE,
-            'not null' => TRUE,
-            'description' => 'Source file ID',
-            'alias' => 'f',
-          ),
-        ),
-        MigrateDestinationFile::getKeySchema(),
-        $this->mapConnection
-      );
-    }
-    $this->source = new MigrateSourceSQL($this->query(),
-      $this->sourceFields, NULL, $this->sourceOptions);
-
-    $this->destination = new MigrateDestinationFile($arguments['bundle'], $arguments['file_class']);
-
-    // Setup common mappings
-    $this->addFieldMapping('destination_dir')
-      ->defaultValue($arguments['destination_dir']);
-    $this->addFieldMapping('source_dir')
-      ->defaultValue($arguments['source_dir']);
-    $this->addFieldMapping('file_replace')
-      ->defaultValue(MigrateFile::FILE_EXISTS_REUSE);
-    $this->addFieldmapping('preserve_files')
-      ->defaultValue(FALSE);
-
-    if (isset($arguments['default_uid'])) {
-      $default_uid = $arguments['default_uid'];
-    }
-    else {
-      $default_uid = 1;
-    }
-    if (isset($user_migration)) {
-      $this->addFieldMapping('uid', 'uid')
-        ->sourceMigration($user_migration)
-        ->defaultValue($default_uid);
-    }
-    else {
-      $this->addFieldMapping('uid')
-        ->defaultValue($default_uid);
-    }
-    $this->addUnmigratedSources(array('filename', 'filemime', 'filesize', 'urlencode'));
-  }
-
-  protected function query() {
-    $query = Database::getConnection('default', $this->sourceConnection)
-      ->select('file_managed', 'f')
-      ->fields('f')
-      ->orderBy($this->newOnly ? 'f.fid' : 'f.timestamp');
-    return $query;
   }
 
   /**
    * Called after the query data is fetched - we'll use this to populate the
    * source row with the CCK fields.
    */
-//  public function prepareRow($row) {
-//    if (parent::prepareRow($row) === FALSE) {
-//      return FALSE;
-//    }
-//
-//    $this->version->getSourceValues($row, $row->fid);
-//    $this->destination->setFileClass('MigrateFileUriAsIs');
-//  }
+  public function prepareRow($row) {
+    if (parent::prepareRow($row) === FALSE) {
+      return FALSE;
+    }
 
-//  protected function fixUri($uri) {
-//
-//    $dir = '/Users/justinwinter/Sites/d7a/docroot/sites/default/files/';
-//    $result = str_replace('public://', '', $uri);
-//    $result = str_replace('private://', '', $result);
-//    return $result;
-//  }
+    $this->destination->setFileClass('CustomMigrateFileUriAsIs');
+  }
 
+  /**
+   * Remove the standard stream wrappers from the incoming URI.
+   *
+   * @param $uri
+   *
+   * @return string
+   */
+  protected function fixUri($uri) {
+    return $uri;
+  }
 }
